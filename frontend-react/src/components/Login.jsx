@@ -1,10 +1,16 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
+import { AuthContext } from '../AuthProvider'
 
 const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' })
-  const [message, setMessage] = useState({ type: '', text: '' })
-  const [isLoading, setIsLoading] = useState(false)
+    const [formData, setFormData] = useState({ username: '', password: '' })
+    const navigate = useNavigate()
+    const [message, setMessage] = useState({ type: '', text: '' })
+    const [isLoading, setIsLoading] = useState(false)
+    const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext)
+    
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -15,19 +21,29 @@ const Login = () => {
     event.preventDefault()
     setMessage({ type: '', text: '' })
 
-    if (!formData.email.trim() || !formData.password) {
-      setMessage({ type: 'error', text: 'Please enter both your email and password.' })
+    if (!formData.username.trim() || !formData.password) {
+      setMessage({ type: 'error', text: 'Please enter both your username and password.' })
       return
     }
 
     setIsLoading(true)
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      const response = await axios.post('http://127.0.0.1:8000/api/v1/token/', {
+        username: formData.username,
+        password: formData.password,
+      })
+
+      localStorage.setItem('accessToken', response.data.access)
+      localStorage.setItem('refreshToken', response.data.refresh)
+
       setMessage({ type: 'success', text: 'Login successful! Welcome back.' })
-      console.log('Login form submitted', formData)
+        setFormData({ username: '', password: '' })
+        setIsLoggedIn(true)
+      navigate('/')
     } catch (error) {
-      setMessage({ type: 'error', text: 'Login failed. Please try again.' })
+      const errorMessage = error.response?.data?.detail || 'Invalid username or password.'
+      setMessage({ type: 'error', text: errorMessage })
       console.error('Login error:', error)
     } finally {
       setIsLoading(false)
@@ -50,12 +66,12 @@ const Login = () => {
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="auth-field">
-            <span>Email</span>
+            <span>Username</span>
             <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formData.email}
+              type="text"
+              name="username"
+              placeholder="Enter your username"
+              value={formData.username}
               onChange={handleChange}
               required
             />
