@@ -1,6 +1,10 @@
+import { useContext } from 'react'
 import { Link } from 'react-router-dom'
+import { AuthContext } from '../AuthProvider'
 
 const Main = () => {
+  const { isLoggedIn } = useContext(AuthContext)
+
   return (
     <div className="container py-4">
       <section className="hero-card">
@@ -12,14 +16,16 @@ const Main = () => {
             Analyze momentum signals, review market forecasts, and make smarter investment decisions.
           </p>
 
-          <div className="hero-card__actions">
-            <Link className="btn btn-info px-4 py-2" to="/register">
-              Create account
-            </Link>
-            <Link className="btn btn-outline-info px-4 py-2" to="/login">
-              Sign in
-            </Link>
-          </div>
+          {!isLoggedIn && (
+            <div className="hero-card__actions">
+              <Link className="btn btn-info px-4 py-2" to="/register">
+                Create account
+              </Link>
+              <Link className="btn btn-outline-info px-4 py-2" to="/login">
+                Sign in
+              </Link>
+            </div>
+          )}
         </div>
 
         <div className="hero-card__panel">
